@@ -86,6 +86,17 @@ You've successfully run and modified your React Native App. :partying_face:
 
 If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
 
+## Native module changes
+
+If you change native Java/Obj-C code (for example adding or annotating methods with `@ReactMethod`), you must rebuild the native app so the new methods are registered and available to JavaScript. For Android, run:
+
+```sh
+# rebuild and install the app on a device/emulator
+npm run android
+```
+
+For iOS, run `npx pod-install` (or `bundle exec pod install`) and then `npm run ios` or build from Xcode.
+
 # Learn More
 
 To learn more about React Native, take a look at the following resources:

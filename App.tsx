@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import AudioModule from './src/native/AudioModule'; // 👈 your JS bridge wrapper
 
+import {NativeModules} from 'react-native';
+console.log('NativeModules:', Object.keys(NativeModules));
+console.log('AudioModule:', NativeModules.AudioModule);
+
 export default function App() {
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState(0);

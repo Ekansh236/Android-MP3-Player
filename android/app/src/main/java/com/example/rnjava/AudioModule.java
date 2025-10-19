@@ -54,7 +54,7 @@ public class AudioModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void pause(Promise promise) {
         try {
-            if (player != null && !player.isPlaying())
+            if (player != null)
                 player.pause();
             promise.resolve(true);
         } catch (Exception e) {
@@ -80,6 +80,7 @@ public class AudioModule extends ReactContextBaseJavaModule {
 
     }
 
+    @ReactMethod
     public void getDuration(Promise promise) {
         try {
             ensurePlayer();
@@ -92,6 +93,13 @@ public class AudioModule extends ReactContextBaseJavaModule {
         catch (Exception e) {
             promise.reject("E_DURATION", e);
         }
+    }
+
+    // JS expects a `play` method name; keep existing `start` but also expose `play`
+    @ReactMethod
+    public void play(Promise promise) {
+        // delegate to the existing start implementation
+        start(promise);
     }
 
     @ReactMethod
@@ -125,15 +133,4 @@ public class AudioModule extends ReactContextBaseJavaModule {
         return "AudioModule";
     }
 
-    public void onHostResume() {
-
-    }
-
-    public void onHostPause() {
-
-    }
-
-    public void onHostDestroy() {
-
-    }
 }
