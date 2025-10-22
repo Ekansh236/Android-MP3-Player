@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import AudioModule from './src/native/AudioModule'; // 👈 your JS bridge wrapper
-
+import DocumentPicker from 'react-native-document-picker';
 import {NativeModules} from 'react-native';
 console.log('NativeModules:', Object.keys(NativeModules));
 console.log('AudioModule:', NativeModules.AudioModule);
+
+// at the top of App.tsx (with other hooks)
+type Track = { name: string; uri: string };
+const [selected, setSelected] = useState<Track | null>(null);
 
 export default function App() {
   const [pos, setPos] = useState(0);
@@ -39,7 +43,11 @@ export default function App() {
   }, [playing]);
 
   const play = async () => {
-    await AudioModule.play();
+    if (selected?.uri) {
+      await AudioModule.playUri(selected.uri);  
+    } else {
+      await AudioModule.play();                  
+    }
     setPlaying(true);
   };
 
@@ -60,6 +68,25 @@ export default function App() {
     return `${m}:${String(s % 60).padStart(2, '0')}`;
   };
 
+  const pickFile = async () => {
+  try {
+    // Open the system file picker
+    const res = await DocumentPicker.pickSingle({ type: DocumentPicker.types.audio });
+
+    // 👇 Right here — after the picker returns successfully
+    setSelected({ name: res.name ?? 'audio.mp3', uri: res.uri });
+
+    console.log('Picked file:', res.name, res.uri);
+  } catch (err) {
+    if (DocumentPicker.isCancel(err)) {
+      console.log('User cancelled picker');
+    } else {
+      console.error('File picker error:', err);
+    }
+  }
+};
+
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Sample MP3 Player</Text>
@@ -75,6 +102,10 @@ export default function App() {
 
         <TouchableOpacity onPress={stop} style={styles.button}>
           <Text style={styles.text}>Stop</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={pickFile} style={styles.button}>
+          <Text style={styles.text}>Pick MP3</Text>
         </TouchableOpacity>
       </View>
 

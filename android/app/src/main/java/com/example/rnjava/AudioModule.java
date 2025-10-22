@@ -4,6 +4,9 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
+
+import java.net.URI;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.Promise;
@@ -37,6 +40,51 @@ public class AudioModule extends ReactContextBaseJavaModule {
         if (player == null) {
             player = MediaPlayer.create(ctx, R.raw.sample); // res/raw/sample.mp3
         }
+    }
+
+    public void playURI(String uriString, Promise promise) {
+        try {
+            Uri uri = Uri.parse(uriString);
+
+            if (player != null) {
+                player.reset();
+                player.release();
+                player = null;
+            }
+
+            player = new MediaPlayer();
+            player.setAudioAttributes(
+            new AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .build()
+            );
+            player.setDataSource(getReactApplicationContext(), uri);
+            player.setOnPreparedListener(mp -> {
+                 mp.start();
+                promise.resolve(true);
+            });
+            player.setOnCompletionListener(mp -> { 
+                cleanupPlayer("ended");
+            });
+            player.prepareAsync();    
+        } catch (Exception e) {
+            promise.reject("E_PLAY_URI", e);  
+        }
+
+    }
+
+    private void cleanupPlayer(String state) {
+        if (player != null) {
+            try {
+            player.stop();
+            } catch (Exception ignored) {}
+            player.release();
+            player = null;
+        }
+        WritableMap m = Arguments.createMap();
+        m.putString("state", state);
+        sendEvent("AudioState", m);
     }
 
     @ReactMethod
