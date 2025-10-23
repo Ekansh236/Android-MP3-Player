@@ -1,108 +1,218 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# MP3 Player - React Native
 
-# Getting Started
+A simple MP3 player app built with React Native and native Android modules using MediaPlayer API.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+- 🎵 Play bundled MP3 file from app resources
+- 📁 Pick and play MP3 files from device storage
+- ⏯️ Play/Pause/Stop controls
+- 🎚️ Interactive slider to seek through audio
+- ⏱️ Real-time playback position display
+- 📊 Shows current time and total duration
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Screenshots
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+[Add screenshots here]
 
-```sh
-# Using npm
-npm start
+## Prerequisites
 
-# OR using Yarn
-yarn start
+- Node.js (v14 or higher)
+- React Native CLI
+- Android Studio with Android SDK
+- Java Development Kit (JDK 11 or higher)
+- An Android device or emulator
+
+## Installation
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/yourusername/RnJavaPlayer.git
+cd RnJavaPlayer
 ```
 
-## Step 2: Build and run your app
+### 2. Install dependencies
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```bash
+npm install
 ```
 
-### iOS
+### 3. Install the slider package
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```bash
+npm install @react-native-community/slider
 ```
 
-Then, and every time you update your native dependencies, run:
+### 4. Install document picker
 
-```sh
-bundle exec pod install
+```bash
+npm install @react-native-documents/picker
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+### 5. Run on Android
 
-```sh
-# Using npm
-npm run ios
+Make sure you have an Android emulator running or device connected, then:
 
-# OR using Yarn
-yarn ios
+```bash
+npx react-native run-android
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## Building APK
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+### Debug APK (for testing)
 
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-## Native module changes
-
-If you change native Java/Obj-C code (for example adding or annotating methods with `@ReactMethod`), you must rebuild the native app so the new methods are registered and available to JavaScript. For Android, run:
-
-```sh
-# rebuild and install the app on a device/emulator
-npm run android
+```bash
+cd android
+./gradlew assembleDebug
 ```
 
-For iOS, run `npx pod-install` (or `bundle exec pod install`) and then `npm run ios` or build from Xcode.
+Output: `android/app/build/outputs/apk/debug/app-debug.apk`
 
-# Learn More
+### Release APK (for distribution)
 
-To learn more about React Native, take a look at the following resources:
+1. Generate a keystore (first time only):
+```bash
+cd android/app
+keytool -genkeypair -v -storetype PKCS12 -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+```
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+2. Configure signing in `android/gradle.properties`:
+```properties
+MYAPP_RELEASE_STORE_FILE=my-release-key.keystore
+MYAPP_RELEASE_KEY_ALIAS=my-key-alias
+MYAPP_RELEASE_STORE_PASSWORD=****
+MYAPP_RELEASE_KEY_PASSWORD=****
+```
+
+3. Build the release APK:
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+Output: `android/app/build/outputs/apk/release/app-release.apk`
+
+## Installing APK
+
+### On Emulator
+
+**Method 1: Drag and drop**
+- Drag the APK file onto the emulator window
+
+**Method 2: ADB command**
+```bash
+adb install android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+### On Physical Device
+
+1. Enable "Install from unknown sources" in Settings
+2. Transfer the APK to your device
+3. Tap the APK file to install
+
+## Project Structure
+
+```
+RnJavaPlayer/
+├── android/
+│   └── app/
+│       └── src/
+│           └── main/
+│               ├── java/com/example/rnjava/
+│               │   ├── AudioModule.java      # Native audio module
+│               │   └── AudioPackage.java     # Package registration
+│               └── res/
+│                   └── raw/
+│                       └── sample.mp3        # Bundled audio file
+├── src/
+│   └── native/
+│       └── AudioModule.ts                    # TypeScript bridge
+├── App.tsx                                   # Main app component
+└── package.json
+```
+
+## How It Works
+
+### Native Module (AudioModule.java)
+- Uses Android's `MediaPlayer` API for audio playback
+- Handles play, pause, stop, seek operations
+- Provides methods to get duration and current position
+- Supports both bundled resources and file URIs
+
+### React Native Bridge (AudioModule.ts)
+- TypeScript interface for the native module
+- Exposes native methods to JavaScript
+
+### UI Component (App.tsx)
+- React Native UI with playback controls
+- Slider for seeking through audio
+- File picker integration for selecting MP3s
+- Real-time position updates
+
+## Usage
+
+1. **Play bundled audio**: Tap "Play" to play the default sample.mp3
+2. **Pick custom audio**: Tap "Pick MP3" to select a file from device storage
+3. **Control playback**: Use Play/Pause/Stop buttons
+4. **Seek**: Drag the slider to jump to any position
+5. **View progress**: See current time and total duration
+
+## Permissions
+
+The app requires storage permissions to pick MP3 files. This is handled automatically by `@react-native-documents/picker`.
+
+## Troubleshooting
+
+### Build fails with "cannot find symbol" errors
+Make sure you have all the required imports in `AudioModule.java`:
+```java
+import android.media.AudioAttributes;
+import android.net.Uri;
+```
+
+### App crashes when picking files
+Ensure `@react-native-documents/picker` is properly installed:
+```bash
+npm install @react-native-documents/picker
+cd android && ./gradlew clean && cd ..
+npx react-native run-android
+```
+
+### Duration shows 0:00
+The duration is only available after the audio file is loaded. Try playing the audio first.
+
+### Position not updating
+Make sure the `playing` state is set to `true` after calling play.
+
+## Technologies Used
+
+- React Native
+- TypeScript
+- Android MediaPlayer API
+- @react-native-community/slider
+- @react-native-documents/picker
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Author
+
+Your Name
+- GitHub: [@yourusername](https://github.com/yourusername)
+- Email: your.email@example.com
+
+## Acknowledgments
+
+- React Native documentation
+- Android MediaPlayer documentation
+- Community contributors
