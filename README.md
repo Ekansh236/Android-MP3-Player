@@ -1,6 +1,6 @@
 # MP3 Player - React Native
 
-A simple MP3 player app built with React Native and native Android modules using MediaPlayer API.
+A simple MP3 player app built with React Native and native Java using MediaPlayer API from Android modules.
 
 ## Features
 
@@ -10,10 +10,6 @@ A simple MP3 player app built with React Native and native Android modules using
 - 🎚️ Interactive slider to seek through audio
 - ⏱️ Real-time playback position display
 - 📊 Shows current time and total duration
-
-## Screenshots
-
-[Add screenshots here]
 
 ## Prerequisites
 
