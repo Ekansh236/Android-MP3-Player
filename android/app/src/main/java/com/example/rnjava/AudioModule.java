@@ -19,6 +19,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class AudioModule extends ReactContextBaseJavaModule {
+    
     private MediaPlayer player;
     private final ReactApplicationContext ctx;
 
@@ -27,23 +28,24 @@ public class AudioModule extends ReactContextBaseJavaModule {
         ctx = reactContext;
     }
 
-    /**
-     * sendEvent
-     * ----------
-     * Sends an event from Java → JS.
-     * JS can subscribe to this using DeviceEventEmitter.
-     */
+    // Send events from Java → JS via DeviceEventEmitter
     private void sendEvent(String eventName, WritableMap params) {
         ctx.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(eventName, params);
     }
 
+    // Lazy init: create MediaPlayer with default audio (R.raw.sample) if none exists
     private void ensurePlayer() {
         if (player == null) {
             player = MediaPlayer.create(ctx, R.raw.sample); // Default audio
         }
     }
 
+    // Play audio from URI: reset player, set data source, prepare async, start on ready
+    //@ReactMethod exposes Java methods to JS (Makes it callable from JS)
+    //Promise is used for async operations to return results or errors back to JS
+
+    // 3. Java receives URI string
     @ReactMethod
     public void playUri(String uriString, Promise promise) {
         try {
@@ -62,9 +64,10 @@ public class AudioModule extends ReactContextBaseJavaModule {
                     .build()
             );
             player.setDataSource(getReactApplicationContext(), uri);
+            // 4. When ready, start and resolve promise
             player.setOnPreparedListener(mp -> {
                 mp.start();
-                promise.resolve(true);  
+                promise.resolve(true);  // Returns boolean value to JS
             });
             player.setOnCompletionListener(mp -> { 
                 cleanupPlayer("ended");
@@ -75,6 +78,7 @@ public class AudioModule extends ReactContextBaseJavaModule {
         }
     }
 
+    // Stop player, release resources, notify JS of state change
     private void cleanupPlayer(String state) {
         if (player != null) {
             try {
@@ -100,6 +104,7 @@ public class AudioModule extends ReactContextBaseJavaModule {
         }
     }
 
+    
     @ReactMethod
     public void pause(Promise promise) {
         try {

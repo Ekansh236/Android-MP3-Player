@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
-import AudioModule from './src/native/AudioModule'; 
+import AudioModule from './src/native/AudioModule'; // Bridge to native Java audio player
 import { pick } from '@react-native-documents/picker';
 import {NativeModules} from 'react-native';
 
@@ -12,7 +12,7 @@ export default function App() {
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [selected, setSelected] = useState<{ name: string; uri: string } | null>(null);
+  const [selected, setSelected] = useState<{ name: string; uri: string } | null>(null); // Selected audio file
   const [isSeeking, setIsSeeking] = useState(false);
 
   // Update duration when selected track changes
@@ -43,6 +43,7 @@ export default function App() {
 
 
 
+  //2. JS calls native with URI to play selected file
   const play = async () => {
     try {
       if (selected?.uri) {
@@ -50,6 +51,7 @@ export default function App() {
       } else {
         await AudioModule.play();
       }
+      // 5. JS promise resolves
       setPlaying(true);
 
       // Get duration after playback starts
@@ -101,6 +103,7 @@ export default function App() {
     return `${m}:${String(s % 60).padStart(2, '0')}`;
   };
 
+  //1. Pick MP3 file from device storage
   const pickFile = async () => {
     try {
       const results = await pick({ type: ['audio/mpeg'] });
