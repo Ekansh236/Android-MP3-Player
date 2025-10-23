@@ -4,7 +4,7 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
-import android.media.AudioAttributes;  // ✅ Add this
+import android.media.AudioAttributes;  
 import android.net.Uri;      
 
 import java.net.URI;
@@ -40,7 +40,7 @@ public class AudioModule extends ReactContextBaseJavaModule {
 
     private void ensurePlayer() {
         if (player == null) {
-            player = MediaPlayer.create(ctx, R.raw.sample); // res/raw/sample.mp3
+            player = MediaPlayer.create(ctx, R.raw.sample); // Default audio
         }
     }
 
@@ -64,7 +64,7 @@ public class AudioModule extends ReactContextBaseJavaModule {
             player.setDataSource(getReactApplicationContext(), uri);
             player.setOnPreparedListener(mp -> {
                 mp.start();
-                promise.resolve(true);  // ✅ Resolve AFTER starting
+                promise.resolve(true);  
             });
             player.setOnCompletionListener(mp -> { 
                 cleanupPlayer("ended");

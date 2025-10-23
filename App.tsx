@@ -18,7 +18,6 @@ export default function App() {
   // Update duration when selected track changes
   useEffect(() => {
     if (selected?.uri) {
-      // Duration will be fetched when play is pressed
       setDur(0);
     }
   }, [selected]);
@@ -111,9 +110,7 @@ export default function App() {
         setSelected({ name: first.name ?? 'audio.mp3', uri: first.uri });
       }
     } catch (error) {
-      // User cancelled or error occurred
       console.log('File picker cancelled or error:', error);
-      // Don't throw - just return silently when user cancels
     }
   };
 
