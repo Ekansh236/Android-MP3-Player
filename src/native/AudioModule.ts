@@ -14,6 +14,3 @@ type AudioModuleType = {
 const { AudioModule } = NativeModules as { AudioModule: AudioModuleType };
 
 export default AudioModule;
-
-await AudioModule.playUri(selected.uri);
-

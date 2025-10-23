@@ -1,46 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import AudioModule from './src/native/AudioModule'; // 👈 your JS bridge wrapper
-import DocumentPicker from 'react-native-document-picker';
+import { pick } from '@react-native-documents/picker';
 import {NativeModules} from 'react-native';
 console.log('NativeModules:', Object.keys(NativeModules));
 console.log('AudioModule:', NativeModules.AudioModule);
 
 // at the top of App.tsx (with other hooks)
 type Track = { name: string; uri: string };
-const [selected, setSelected] = useState<Track | null>(null);
 
 export default function App() {
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [selected, setSelected] = useState<{ name: string; uri: string } | null>(null);
 
-  // Get duration when the app starts
+  // Update duration when selected track changes
   useEffect(() => {
-    AudioModule.getDuration()
-      .then(setDur)
-      .catch((e) => console.warn('getDuration error:', e));
-  }, []);
-
-  // Poll current position while playing
-  useEffect(() => {
-    let timer: ReturnType<typeof setInterval> | null = null;
-
-    if (playing) {
-      timer = setInterval(async () => {
-        try {
-          const current = await AudioModule.getCurrentPosition();
-          setPos(current);
-        } catch {
-          setPos(0);
-        }
-      }, 500);
-    }
-
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [playing]);
+  // Only fetch duration if we have a selected track
+  if (selected?.uri) {
+    // You might need a small delay to let the native module load the file
+    const timer = setTimeout(() => {
+      AudioModule.getDuration()
+        .then(setDur)
+        .catch((e) => console.warn('getDuration error:', e));
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }
+}, [selected]); // ✅ Add dependency
 
   const play = async () => {
     if (selected?.uri) {
@@ -69,23 +57,19 @@ export default function App() {
   };
 
   const pickFile = async () => {
-  try {
-    // Open the system file picker
-    const res = await DocumentPicker.pickSingle({ type: DocumentPicker.types.audio });
+    try {
+      const results = await pick({ type: ['audio/mpeg'] });
+      const first = Array.isArray(results) ? results[0] : results;
 
-    // 👇 Right here — after the picker returns successfully
-    setSelected({ name: res.name ?? 'audio.mp3', uri: res.uri });
-
-    console.log('Picked file:', res.name, res.uri);
-  } catch (err) {
-    if (DocumentPicker.isCancel(err)) {
-      console.log('User cancelled picker');
-    } else {
-      console.error('File picker error:', err);
+      if (first?.uri) {
+        setSelected({ name: first.name ?? 'audio.mp3', uri: first.uri });
+      }
+    } catch (error) {
+      // User cancelled or error occurred
+      console.log('File picker cancelled or error:', error);
+      // Don't throw - just return silently when user cancels
     }
-  }
-};
-
+  };
 
   return (
     <SafeAreaView style={styles.container}>

@@ -4,6 +4,8 @@ import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
+import android.media.AudioAttributes;  // ✅ Add this
+import android.net.Uri;      
 
 import java.net.URI;
 
@@ -42,7 +44,8 @@ public class AudioModule extends ReactContextBaseJavaModule {
         }
     }
 
-    public void playURI(String uriString, Promise promise) {
+    @ReactMethod
+    public void playUri(String uriString, Promise promise) {
         try {
             Uri uri = Uri.parse(uriString);
 
