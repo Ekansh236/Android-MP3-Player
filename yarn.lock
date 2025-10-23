@@ -1524,6 +1524,11 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
+"@react-native-community/slider@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.npmjs.org/@react-native-community/slider/-/slider-5.0.1.tgz"
+  integrity sha512-K3JRWkIW4wQ79YJ6+BPZzp1SamoikxfPRw7Yw4B4PElEQmqZFrmH9M5LxvIo460/3QSrZF/wCgi3qizJt7g/iw==
+
 "@react-native-documents/picker@^10.1.7":
   version "10.1.7"
   resolved "https://registry.npmjs.org/@react-native-documents/picker/-/picker-10.1.7.tgz"

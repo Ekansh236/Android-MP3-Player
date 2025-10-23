@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import AudioModule from './src/native/AudioModule'; // 👈 your JS bridge wrapper
+import Slider from '@react-native-community/slider';
+import AudioModule from './src/native/AudioModule'; 
 import { pick } from '@react-native-documents/picker';
 import {NativeModules} from 'react-native';
+
 console.log('NativeModules:', Object.keys(NativeModules));
 console.log('AudioModule:', NativeModules.AudioModule);
 
-// at the top of App.tsx (with other hooks)
 type Track = { name: string; uri: string };
 
 export default function App() {
@@ -14,29 +15,58 @@ export default function App() {
   const [dur, setDur] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [selected, setSelected] = useState<{ name: string; uri: string } | null>(null);
+  const [isSeeking, setIsSeeking] = useState(false);
 
   // Update duration when selected track changes
   useEffect(() => {
-  // Only fetch duration if we have a selected track
-  if (selected?.uri) {
-    // You might need a small delay to let the native module load the file
-    const timer = setTimeout(() => {
-      AudioModule.getDuration()
-        .then(setDur)
-        .catch((e) => console.warn('getDuration error:', e));
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }
-}, [selected]); // ✅ Add dependency
+    if (selected?.uri) {
+      // Duration will be fetched when play is pressed
+      setDur(0);
+    }
+  }, [selected]);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    if (playing && !isSeeking) {
+      timer = setInterval(async () => {
+        try {
+          const current = await AudioModule.getCurrentPosition();
+          setPos(current);
+        } catch {
+          setPos(0);
+        }
+      }, 500);
+    }
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [playing, isSeeking]);
+
+
 
   const play = async () => {
-    if (selected?.uri) {
-      await AudioModule.playUri(selected.uri);  
-    } else {
-      await AudioModule.play();                  
+    try {
+      if (selected?.uri) {
+        await AudioModule.playUri(selected.uri);
+      } else {
+        await AudioModule.play();
+      }
+      setPlaying(true);
+
+      // Get duration after playback starts
+      setTimeout(async () => {
+        try {
+          const newDur = await AudioModule.getDuration();
+          setDur(newDur);
+        } catch (e) {
+          console.warn('getDuration error:', e);
+        }
+      }, 1000);
+    } catch (error) {
+      console.error('Play error:', error);
     }
-    setPlaying(true);
   };
 
   const pause = async () => {
@@ -48,6 +78,24 @@ export default function App() {
     await AudioModule.stop();
     setPlaying(false);
     setPos(0);
+  };
+
+  const onSliderStart = () => {
+    setIsSeeking(true);
+  };
+
+  const onSliderChange = (value: number) => {
+    setPos(value);
+  };
+
+  const onSliderComplete = async (value: number) => {
+    try {
+      await AudioModule.seekTo(Math.floor(value));
+      setIsSeeking(false);
+    } catch (e) {
+      console.warn('Seek error:', e);
+      setIsSeeking(false);
+    }
   };
 
   const formatTime = (ms: number) => {
@@ -75,6 +123,29 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Sample MP3 Player</Text>
 
+      {selected && (
+        <Text style={styles.trackName}>{selected.name}</Text>
+      )}
+
+      <View style={styles.sliderContainer}>
+        <Text style={styles.time}>{formatTime(pos)}</Text>
+        
+        <Slider
+          style={styles.slider}
+          minimumValue={0}
+          maximumValue={dur || 1}
+          value={pos}
+          onSlidingStart={onSliderStart}
+          onValueChange={onSliderChange}
+          onSlidingComplete={onSliderComplete}
+          minimumTrackTintColor="#2e6ee6"
+          maximumTrackTintColor="#555"
+          thumbTintColor="#2e6ee6"
+        />
+        
+        <Text style={styles.time}>{formatTime(dur)}</Text>
+      </View>
+
       <View style={styles.row}>
         <TouchableOpacity onPress={play} style={styles.button}>
           <Text style={styles.text}>Play</Text>
@@ -92,19 +163,58 @@ export default function App() {
           <Text style={styles.text}>Pick MP3</Text>
         </TouchableOpacity>
       </View>
-
-      <Text style={styles.time}>
-        {formatTime(pos)} / {formatTime(dur)}
-      </Text>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#111' },
-  title: { color: '#fff', fontSize: 22, marginBottom: 20 },
-  row: { flexDirection: 'row', gap: 12 },
-  button: { backgroundColor: '#2e6ee6', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 8 },
-  text: { color: '#fff', fontWeight: '600' },
-  time: { color: '#fff', marginTop: 20, fontSize: 18 },
+  container: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: '#111',
+    paddingHorizontal: 20,
+  },
+  title: { 
+    color: '#fff', 
+    fontSize: 22, 
+    marginBottom: 10,
+  },
+  trackName: {
+    color: '#aaa',
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  sliderContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 30,
+    gap: 10,
+  },
+  slider: {
+    flex: 1,
+    height: 40,
+  },
+  time: {
+    color: '#fff',
+    fontSize: 14,
+    minWidth: 45,
+  },
+  row: { 
+    flexDirection: 'row', 
+    gap: 12,
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  button: { 
+    backgroundColor: '#2e6ee6', 
+    paddingVertical: 10, 
+    paddingHorizontal: 16, 
+    borderRadius: 8,
+  },
+  text: { 
+    color: '#fff', 
+    fontWeight: '600',
+  },
 });

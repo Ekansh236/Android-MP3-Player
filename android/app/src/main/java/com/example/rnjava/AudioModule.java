@@ -54,27 +54,25 @@ public class AudioModule extends ReactContextBaseJavaModule {
                 player.release();
                 player = null;
             }
-
             player = new MediaPlayer();
             player.setAudioAttributes(
-            new AudioAttributes.Builder()
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .build()
+                new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .build()
             );
             player.setDataSource(getReactApplicationContext(), uri);
             player.setOnPreparedListener(mp -> {
-                 mp.start();
-                promise.resolve(true);
+                mp.start();
+                promise.resolve(true);  // ✅ Resolve AFTER starting
             });
             player.setOnCompletionListener(mp -> { 
                 cleanupPlayer("ended");
             });
-            player.prepareAsync();    
+            player.prepareAsync();
         } catch (Exception e) {
             promise.reject("E_PLAY_URI", e);  
         }
-
     }
 
     private void cleanupPlayer(String state) {
@@ -146,10 +144,8 @@ public class AudioModule extends ReactContextBaseJavaModule {
         }
     }
 
-    // JS expects a `play` method name; keep existing `start` but also expose `play`
     @ReactMethod
     public void play(Promise promise) {
-        // delegate to the existing start implementation
         start(promise);
     }
 
