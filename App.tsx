@@ -8,8 +8,6 @@ import {NativeModules} from 'react-native';
 console.log('NativeModules:', Object.keys(NativeModules));
 console.log('AudioModule:', NativeModules.AudioModule);
 
-type Track = { name: string; uri: string };
-
 export default function App() {
   const [pos, setPos] = useState(0);
   const [dur, setDur] = useState(0);
